@@ -45,3 +45,15 @@ const (
 	TRUE     = "TRUE"
 	FALSE    = "FALSE"
 )
+
+var keywords = map[string]TokenType{
+	"func": FUNCTION,
+	"var":  VAR,
+}
+
+func LookupIdent(ident string) TokenType {
+	if tok, exists := keywords[ident]; exists {
+		return tok
+	}
+	return IDENT
+}
