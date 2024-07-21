@@ -24,6 +24,10 @@ const (
 	LT       = "<"
 	GT       = ">"
 	BANG     = "!"
+	EQ       = "=="
+	NOT_EQ   = "!="
+	GTE      = ">="
+	LTE      = "<="
 
 	// Delimiters
 	COMMA     = ","
@@ -47,8 +51,16 @@ const (
 )
 
 var keywords = map[string]TokenType{
-	"func": FUNCTION,
-	"var":  VAR,
+	"func":     FUNCTION,
+	"var":      VAR,
+	"return":   RETURN,
+	"break":    BREAK,
+	"if":       IF,
+	"else":     ELSE,
+	"blankout": BLANKOUT,
+	"blankin":  BLANKIN,
+	"true":     TRUE,
+	"false":    FALSE,
 }
 
 func LookupIdent(ident string) TokenType {
