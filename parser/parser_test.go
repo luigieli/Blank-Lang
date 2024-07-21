@@ -8,9 +8,9 @@ import (
 
 func TestVarStatements(t *testing.T) {
 	input := `
-		var x 5;
-		var = 10;
-		var 838383;
+		var x = 5;
+		var y = 10;
+		var foobar = 838383;
 	`
 	l := lexer.New(input)
 	p := New(l)
