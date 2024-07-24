@@ -135,3 +135,31 @@ func TestIdentifierExpression(t *testing.T) {
 			ident.TokenLiteral())
 	}
 }
+
+func TestIntegerExpression(t *testing.T) {
+	input := "190;"
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+	if len(program.Statements) != 1 {
+		t.Fatalf("program has not enough statements. got=%d",
+			len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.IntegerLiteral. got=%T",
+			program.Statements[0])
+	}
+	integer, ok := stmt.Expression.(*ast.IntegerLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.IntegerLiteral. got=%T", integer.Value)
+	}
+	if integer.Value != 190 {
+		t.Errorf("integer.Value not %s. got=%d", "190", integer.Value)
+	}
+	if integer.Token.Literal != "190" {
+		t.Errorf("integer.TokenLiteral not %s. got=%s", "190",
+			integer.TokenLiteral())
+	}
+}
