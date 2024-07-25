@@ -109,11 +109,25 @@ type IntegerLiteral struct {
 	Value int64
 }
 
-func (il *IntegerLiteral) expressionNode()       {}
+func (il *IntegerLiteral) expressionNode()      {}
 func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
 func (il *IntegerLiteral) String() string {
 	if il != nil {
 		return il.Token.Literal
+	}
+	return ""
+}
+
+type PrefixExpression struct {
+	Token token.Token
+	Right    Expression
+}
+
+func (pe *PrefixExpression) expressionNode()    {}
+func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *PrefixExpression) String() string {
+	if pe != nil {
+		return pe.Token.Literal
 	}
 	return ""
 }
