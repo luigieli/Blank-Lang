@@ -3,6 +3,7 @@ package ast
 import (
 	"blank/token"
 	"bytes"
+	"fmt"
 )
 
 type Node interface {
@@ -120,14 +121,33 @@ func (il *IntegerLiteral) String() string {
 
 type PrefixExpression struct {
 	Token token.Token
-	Right    Expression
+	Right Expression
 }
 
-func (pe *PrefixExpression) expressionNode()    {}
+func (pe *PrefixExpression) expressionNode()      {}
 func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
 func (pe *PrefixExpression) String() string {
 	if pe != nil {
 		return pe.Token.Literal
 	}
 	return ""
+}
+
+type InfixExpression struct {
+	Operator token.Token
+	Right    Expression
+	Left     Expression
+}
+
+func (ip *InfixExpression) expressionNode()      {}
+func (ip *InfixExpression) TokenLiteral() string { return ip.Operator.Literal }
+func (ip *InfixExpression) String() string {
+	var out bytes.Buffer
+	if ip != nil {
+		out.WriteString(fmt.Sprintf("%s", ip.Left.String()))
+		out.WriteString(ip.TokenLiteral() + " ")
+		out.WriteString(fmt.Sprintf("%s", ip.Right.String()))
+		out.WriteString(";")
+	}
+	return out.String()
 }
