@@ -46,6 +46,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+	p.registerPrefix(token.BANG, p.parsePrefixExpression)
+	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	return p
 }
 func (p *Parser) nextToken() {
@@ -166,9 +168,19 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	stmtInt := &ast.IntegerLiteral{Token: p.curToken}
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("Error, %s is not a number!!", p.curToken.Literal )
+		msg := fmt.Sprintf("Error, %s is not a number!!", p.curToken.Literal)
 		p.errors = append(p.errors, msg)
 	}
 	stmtInt.Value = value
 	return stmtInt
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	stmtPrefix := &ast.PrefixExpression{Token: p.curToken}
+	
+	p.nextToken()
+	
+	stmtPrefix.Right = p.parseExpression(PREFIX)
+	
+	return stmtPrefix
 }
