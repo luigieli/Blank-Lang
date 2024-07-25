@@ -143,8 +143,7 @@ func TestIntegerExpression(t *testing.T) {
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()
-	checkParserErrors(
-		t, p)
+	checkParserErrors(t, p)
 	if len(program.Statements) != 1 {
 		t.Fatalf("program has not enough statements. got=%d",
 			len(program.Statements))
@@ -232,5 +231,54 @@ func CheckIndentifierExpression(t *testing.T, il ast.Expression, value string) {
 	if expression.TokenLiteral() != value {
 		t.Errorf("expression.TokenLiteral not %s. got=%s", value,
 			expression.TokenLiteral())
+	}
+}
+
+func TestInfixExpressoin(t *testing.T) {
+	input := `
+		5 - 5;
+		23 * 2;
+		13 + 13;
+		10 / 2;
+	`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	type OutputStruct struct {
+		left     int64
+		operator string
+		right    int64
+	}
+	output := []OutputStruct{
+		{left: 5, operator: token.MINUS, right: 5},
+		{left: 23, operator: token.ASTERISK, right: 2},
+		{left: 13, operator: token.PLUS, right: 13},
+		{left: 10, operator: token.SLASH, right: 2},
+	}
+	checkParserErrors(t, p)
+	if len(program.Statements) != 4 {
+		t.Fatalf("program has not enough statements. got=%d",
+			len(program.Statements))
+	}
+	for i := 0; i < len(program.Statements); i++ {
+		stmt, ok := program.Statements[i].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[%d] is not ast.IntegerLiteral. got=%T", i,
+				program.Statements[i])
+		}
+		infixExpression, ok := stmt.Expression.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("infixExpression not *ast.infixExpression. got=%T", infixExpression.String())
+		}
+		if infixExpression.Left.(*ast.IntegerLiteral).Value != output[i].left {
+			t.Errorf("infixExpression.Value not %d. got=%d", output[i].left, infixExpression.Left.(*ast.IntegerLiteral).Value)
+		}
+		if infixExpression.TokenLiteral() != output[i].operator {
+			t.Errorf("infixExpression.Operator.Literal not %s. got=%s", output[i].operator,
+				infixExpression.TokenLiteral())
+		}
+		if infixExpression.Right.(*ast.IntegerLiteral).Value != output[i].right {
+			t.Errorf("infixExpression.Value not %d. got=%d", output[i].right, infixExpression.Right.(*ast.IntegerLiteral).Value)
+		}
 	}
 }
