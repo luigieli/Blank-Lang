@@ -3,6 +3,8 @@ package parser
 import (
 	"blank/ast"
 	"blank/lexer"
+	"blank/token"
+	"fmt"
 	"testing"
 )
 
@@ -141,7 +143,8 @@ func TestIntegerExpression(t *testing.T) {
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()
-	checkParserErrors(t, p)
+	checkParserErrors(
+		t, p)
 	if len(program.Statements) != 1 {
 		t.Fatalf("program has not enough statements. got=%d",
 			len(program.Statements))
@@ -161,5 +164,73 @@ func TestIntegerExpression(t *testing.T) {
 	if integer.Token.Literal != "190" {
 		t.Errorf("integer.TokenLiteral not %s. got=%s", "190",
 			integer.TokenLiteral())
+	}
+}
+
+func TestPrefixExpression(t *testing.T) {
+	input := `
+		!test;
+		-30;
+	`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+	if len(program.Statements) != 2 {
+		t.Fatalf("program has not enough statements. got=%d",
+			len(program.Statements))
+	}
+
+	for i := 0; i < len(program.Statements); i++ {
+		stmt, ok := program.Statements[i].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+				program.Statements[i])
+		}
+		prefix, ok := stmt.Expression.(*ast.PrefixExpression)
+		if !ok {
+			t.Fatalf("exp not *ast.PrefixExpression. got=%T", prefix.TokenLiteral())
+		}
+	}
+	prefix := program.Statements[0].(*ast.ExpressionStatement).Expression.(*ast.PrefixExpression)
+	if prefix.TokenLiteral() != token.BANG {
+		t.Errorf("prefix.TokenLiteral not '!'. got=%s",
+			prefix.TokenLiteral())
+	}
+	CheckIndentifierExpression(t, prefix.Right, "test")
+
+	prefix = program.Statements[1].(*ast.ExpressionStatement).Expression.(*ast.PrefixExpression)
+	if prefix.TokenLiteral() != token.MINUS {
+		t.Errorf("prefix.TokenLiteral not '-'. got=%s",
+			prefix.TokenLiteral())
+	}
+	CheckIntegerExpression(t, prefix.Right, 30)
+}
+
+func CheckIntegerExpression(t *testing.T, il ast.Expression, value int64) {
+	integer, ok := il.(*ast.IntegerLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.IntegerLiteral. got=%T", integer)
+	}
+	if integer.Value != value {
+		t.Errorf("integer.Value not %d. got=%d", value, integer.Value)
+	}
+	if integer.TokenLiteral() != fmt.Sprintf("%d", value) {
+		t.Errorf("integer.TokenLiteral not %d. got=%s", value,
+			integer.TokenLiteral())
+	}
+}
+
+func CheckIndentifierExpression(t *testing.T, il ast.Expression, value string) {
+	expression, ok := il.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("exp not *ast.Identifier. got=%T", expression)
+	}
+	if expression.Value != value {
+		t.Errorf("expression.Value not %s. got=%s", value, expression.Value)
+	}
+	if expression.TokenLiteral() != value {
+		t.Errorf("expression.TokenLiteral not %s. got=%s", value,
+			expression.TokenLiteral())
 	}
 }
