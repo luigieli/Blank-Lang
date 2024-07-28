@@ -151,3 +151,12 @@ func (ip *InfixExpression) String() string {
 	}
 	return out.String()
 }
+
+type BooleanExpression struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *BooleanExpression) expressionNode()      {}
+func (b *BooleanExpression) TokenLiteral() string { return b.Token.Literal }
+func (b *BooleanExpression) String() string       { return b.Token.Literal }
