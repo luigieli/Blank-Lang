@@ -234,7 +234,7 @@ func CheckIndentifierExpression(t *testing.T, il ast.Expression, value string) {
 	}
 }
 
-func TestInfixExpressoin(t *testing.T) {
+func TestInfixExpression(t *testing.T) {
 	input := `
 		5 - 5;
 		23 * 2;
@@ -281,4 +281,76 @@ func TestInfixExpressoin(t *testing.T) {
 			t.Errorf("infixExpression.Value not %d. got=%d", output[i].right, infixExpression.Right.(*ast.IntegerLiteral).Value)
 		}
 	}
+}
+
+func testIdentifier(t *testing.T, exp ast.Expression, value string) bool {
+	identificator, ok := exp.(*ast.Identifier)
+
+	if !ok {
+		t.Fatalf("exp is not (*ast.Identifier) got=%T", identificator)
+	}
+
+	if identificator.Value != value {
+		t.Fatalf("identificator.Value is not %s got=%s", value, identificator.String())
+	}
+
+	if identificator.TokenLiteral() != value {
+		t.Fatalf("indentificator.TokenLiteral() is not %s, got=%s", value, identificator.TokenLiteral())
+	}
+
+	return true
+}
+
+func testIntegerLiteral(t *testing.T, exp ast.Expression, value int64) bool {
+	integer, ok := exp.(*ast.IntegerLiteral)
+
+	if !ok {
+		t.Fatalf("exp is not (*ast.IntegerLiteral) got=%T", integer)
+	}
+
+	if integer.Value != value {
+		t.Fatalf("integer.Value is not %d got=%d", value, integer.Value)
+	}
+
+	if integer.TokenLiteral() != fmt.Sprintf("%d", value) {
+		t.Fatalf("indentificator.TokenLiteral() is not %d, got=%s", value, integer.TokenLiteral())
+	}
+
+	return true
+}
+
+func testGenericLiteralExpression(t *testing.T, exp ast.Expression, expected interface{}) bool {
+	switch value := expected.(type) {
+	case int:
+		return testIntegerLiteral(t, exp, int64(value))
+	case int64:
+		return testIntegerLiteral(t, exp, value)
+	case string:
+		return testIdentifier(t, exp, value)
+	}
+	t.Errorf("type of exp not supported, got=%T", exp)
+	return false
+}
+
+func testGenericInfixExpression(t *testing.T, exp ast.Expression, left interface{}, operator string, right interface{}) bool {
+	infExp, ok := exp.(*ast.InfixExpression)
+
+	if !ok {
+		t.Fatalf("exp is not a (*ast.InfixExpression), got=%T", infExp)
+	}
+
+	if !testGenericLiteralExpression(t, exp, left) {
+		return false
+	}
+
+	if infExp.TokenLiteral() != operator {
+		t.Fatalf("infExp.Operator is not %s, got=%s", operator, infExp.TokenLiteral())
+		return false
+	}
+
+	if !testGenericLiteralExpression(t, exp, right) {
+		return false
+	}
+
+	return true
 }
